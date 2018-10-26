@@ -19,6 +19,9 @@ type Greeter struct {
 // class Greeter:
 //   def Talk(self):
 // のselfがgに相当してるのかしら
+// インターフェースを満たす＝インターフェースで宣言されたメソッドが全て、データ型＝ここでは構造体に対して定義されていること
+// 今回は、Greeterをレシーバとして、構造体にメソッドを定義しているのでok
+
 func (g Greeter) Talk() {
     fmt.Printf("Hello, my name is %s\n", g.name)
 }
