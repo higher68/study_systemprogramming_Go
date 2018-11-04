@@ -5,6 +5,7 @@ import (
     "os"
     "io"
     "hash/crc32"
+    "bytes"
 )
 
 func dumpChunk(chunk io.Reader) {
@@ -13,6 +14,11 @@ func dumpChunk(chunk io.Reader) {
     buffer := make([]byte, 4)
     chunk.Read(buffer)
     fmt.Printf("chunk '%v' (%d bytes)\n", string(buffer), length)
+    if bytes.Equal(buffer, []bytes("tEXt")) {
+        rawText := make([]byte, length)
+        chunk.Read(rawText)
+        fmt.Println(string(rawText))
+    }
 }
 
 func readChunks(file *os.File) []io.Reader {
@@ -50,6 +56,26 @@ func textChunk(text string) io.Reader {
 }
 
 func main() {
-    file, err != os.Open("Lenna.png")
-    if err != nil{
-        
+    file, err := os.Open("Lenna.png")
+    if err != nil {
+        panic(err)
+    }
+    defer file.Close()
+    newFile, err := os.Create("Lenna2.png")
+    if err != nil {
+        panic(err)
+    }
+    defer newFile.Close()
+    chunks := readChunks(file)
+    // シグニチャ書き込み
+    io.WriteString(newFile, "\x89PNG\r\n\x1a\n")
+    // 先頭に必要なIHDRチャンクを書き込み
+    io.Copy(newFile, chunks[0])
+    // テキストチャンクを追加
+    io.Copy(newFile, textChunk("ASCII PROGAMMING++"))
+    // 残りのチャンクを追加
+    for _, chunk := range chunks[1:] {
+        io.Copy(newFile, chunk)
+    }
+}
+
