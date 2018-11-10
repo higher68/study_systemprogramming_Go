@@ -14,11 +14,6 @@ func dumpChunk(chunk io.Reader) {
     buffer := make([]byte, 4)
     chunk.Read(buffer)
     fmt.Printf("chunk '%v' (%d bytes)\n", string(buffer), length)
-    if bytes.Equal(buffer, []bytes("tEXt")) {
-        rawText := make([]byte, length)
-        chunk.Read(rawText)
-        fmt.Println(string(rawText))
-    }
 }
 
 func readChunks(file *os.File) []io.Reader {
@@ -49,8 +44,9 @@ func textChunk(text string) io.Reader {
     binary.Write(&buffer, binary.BigEndian, int32(len(byteData)))
     buffer.WriteString("tEXt")
     buffer.Write(byteData)
-    // CRCを計算して追加
+    // CRCを計算して追加CRCってのはデータの破損をチェックしてくれるらしい
     crc := crc32.NewIEEE()
+    io.WriteString(crc, "tEXt")
     binary.Write(&buffer, binary.BigEndian, crc.Sum32())
     return &buffer
 }
